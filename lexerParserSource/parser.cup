@@ -1,0 +1,78 @@
+
+terminal           SELECT, AND, OF, WITH, GREATER, EQUAL, LOWER, THANTOCONN, INCLUDING, SEMI;
+terminal           CATNAME, CATCOUNTRY, CATPOP, CATLANGS, CATTZ, CATGOV, CATSIZE, EVERYCAT;
+terminal           COUNTRIESDB;
+terminal           TEXT;
+terminal Integer   NUMBER;
+   
+
+non terminal       startT, condition, categories, category, categoryName, textCats, numberCats, operation;
+
+precedence left AND;
+
+
+   startT ::= SELECT categories:cat OF COUNTRIESDB SEMI
+             {: RESULT = "SELECT " + cat + " FROM countryData"; :}
+             |
+             SELECT categories:cat OF COUNTRIESDB WITH condition:cond SEMI
+             {: RESULT = "SELECT " + cat + " FROM countryData WHERE " + cond; :};
+
+   categories ::= category:cat
+                  {: RESULT = cat; :}
+                  | 
+                  EVERYCAT
+                  {: RESULT = "*"; :};
+
+   category ::= category:cat1 AND category:cat2
+                {: RESULT = cat1 + ", " + cat2; :}
+                |
+                categoryName:cat
+                {: RESULT = cat; :};
+
+   categoryName ::= textCats:cat
+                    {: RESULT = cat; :}
+                    | 
+                    numberCats:cat
+                    {: RESULT = cat; :};
+   
+   textCats ::= CATNAME
+                {: RESULT = "name"; :}
+                | 
+                CATCOUNTRY
+                {: RESULT = "country"; :}
+                | 
+                CATLANGS
+                {: RESULT = "languages"; :}
+                | 
+                CATTZ
+                {: RESULT = "timezone"; :}
+                | 
+                CATGOV
+                {: RESULT = "government"; :};
+
+   numberCats ::= CATPOP
+                  {: RESULT = "population"; :}
+                  | 
+                  CATSIZE
+                  {: RESULT = "size"; :};
+                 
+   condition ::= condition:cond1 AND condition:cond2
+                 {: RESULT = cond1 + " AND " + cond2; :}
+                 | 
+                 textCats:cat EQUAL THANTOCONN TEXT:t
+                 {: RESULT = cat + " = '"  + t + "'"; :}
+                 | 
+                 textCats:cat INCLUDING TEXT:t
+                 {: RESULT = cat + " = '%"  + t + "%'"; :}
+                 | 
+                 numberCats:cat operation:op NUMBER:n
+                 {: RESULT = cat + " " + op + " "  + n + ""; :};
+
+   operation ::= GREATER THANTOCONN
+                 {: RESULT = ">"; :}
+                 | 
+                 EQUAL THANTOCONN
+                 {: RESULT = "="; :}
+                 | 
+                 LOWER THANTOCONN
+                 {: RESULT = "<"; :};
